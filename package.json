@@ -1,0 +1,13 @@
+{
+  "name": "osx-keylogger",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OSX Keylogger POC",
+  "main": "./build/Release/osx-keylogger",
+  "gypfile": true,
+  "author": "Magnus Weinberg<magnus.weinberg@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "nan": "^2.6.2"
+  }
+}
