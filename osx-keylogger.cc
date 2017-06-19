@@ -1,27 +1,45 @@
-// contents of addon_source.cc
-
-// This is a basic addon - a binding.gyp file
-// would need to include this file as it's source.
-
 #include <nan.h>
-using namespace std;
+#include <unistd.h>
+
 using namespace Nan;
-using namespace v8;
 
-// Accepts 1 number from JavaScript, adds 42 and returns the result.
-NAN_METHOD(PassNumber) {
-  Nan::Maybe<double> value = Nan::To<double>(info[0]);
-  Local<Number> retval = Nan::New(value.FromJust() + 42);
-  info.GetReturnValue().Set(retval);
+class KeyloggerWorker : public AsyncProgressWorker {
+ public:
+  KeyloggerWorker(Callback *callback, Callback *progress, int iters)
+    : AsyncProgressWorker(callback), progress(progress), iters(iters) {}
+  ~KeyloggerWorker() {}
+
+  void Execute (const AsyncProgressWorker::ExecutionProgress& progress) {
+    for (int i = 0; i < iters; ++i) {
+      progress.Send(reinterpret_cast<const char*>(&i), sizeof(int));
+      usleep(1000000);
+    }
+  }
+
+  void HandleProgressCallback(const char *data, size_t size) {
+    Nan::HandleScope scope;
+
+    v8::Local<v8::Value> argv[] = {
+        New<v8::Integer>(*reinterpret_cast<int*>(const_cast<char*>(data)))
+    };
+    progress->Call(1, argv);
+  }
+
+ private:
+  Callback *progress;
+  int iters;
+};
+
+NAN_METHOD(Listen) {
+  Callback *progress = new Callback(info[0].As<v8::Function>());
+  Callback *callback = new Callback(info[0].As<v8::Function>());
+  AsyncQueueWorker(new KeyloggerWorker(callback, progress, 100));
 }
 
-// Called by the NODE_MODULE macro below,
-// exposes a pass_number method to JavaScript, which maps to PassNumber
-// above.
 NAN_MODULE_INIT(Init) {
-   Nan::Set(target, New<String>("pass_number").ToLocalChecked(),
-      GetFunction(New<FunctionTemplate>(PassNumber)).ToLocalChecked());
+  Set(target
+    , New<v8::String>("listen").ToLocalChecked()
+    , New<v8::FunctionTemplate>(Listen)->GetFunction());
 }
 
-// macro to load the module when require'd
 NODE_MODULE(my_addon, Init)
