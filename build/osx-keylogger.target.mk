@@ -7,39 +7,48 @@ DEFS_Debug := \
 	'-DUSING_UV_SHARED=1' \
 	'-DUSING_V8_SHARED=1' \
 	'-DV8_DEPRECATION_WARNINGS=1' \
+	'-D_DARWIN_USE_64_BIT_INODE=1' \
 	'-D_LARGEFILE_SOURCE' \
 	'-D_FILE_OFFSET_BITS=64' \
 	'-DBUILDING_NODE_EXTENSION' \
 	'-DDEBUG' \
-	'-D_DEBUG'
+	'-D_DEBUG' \
+	'-DV8_ENABLE_CHECKS'
 
 # Flags passed to all source files.
 CFLAGS_Debug := \
-	-fPIC \
-	-pthread \
+	-O0 \
+	-gdwarf-2 \
+	-mmacosx-version-min=10.7 \
+	-arch x86_64 \
 	-Wall \
-	-Wextra \
-	-Wno-unused-parameter \
-	-m64 \
-	-Wall \
-	-std=c++11 \
-	-g \
-	-O0
+	-Wendif-labels \
+	-W \
+	-Wno-unused-parameter
 
 # Flags passed to only C files.
-CFLAGS_C_Debug :=
+CFLAGS_C_Debug := \
+	-fno-strict-aliasing
 
 # Flags passed to only C++ files.
 CFLAGS_CC_Debug := \
+	-std=gnu++0x \
+	-stdlib=libc++ \
 	-fno-rtti \
-	-fno-exceptions \
-	-std=gnu++0x
+	-fno-threadsafe-statics \
+	-fno-strict-aliasing
+
+# Flags passed to only ObjC files.
+CFLAGS_OBJC_Debug :=
+
+# Flags passed to only ObjC++ files.
+CFLAGS_OBJCC_Debug :=
 
 INCS_Debug := \
-	-I/home/monk/.node-gyp/7.8.0/include/node \
-	-I/home/monk/.node-gyp/7.8.0/src \
-	-I/home/monk/.node-gyp/7.8.0/deps/uv/include \
-	-I/home/monk/.node-gyp/7.8.0/deps/v8/include \
+	-I/Users/monk/.node-gyp/8.0.0/include/node \
+	-I/Users/monk/.node-gyp/8.0.0/src \
+	-I/Users/monk/.node-gyp/8.0.0/deps/uv/include \
+	-I/Users/monk/.node-gyp/8.0.0/deps/v8/include \
 	-I$(srcdir)/node_modules/nan
 
 DEFS_Release := \
@@ -47,37 +56,45 @@ DEFS_Release := \
 	'-DUSING_UV_SHARED=1' \
 	'-DUSING_V8_SHARED=1' \
 	'-DV8_DEPRECATION_WARNINGS=1' \
+	'-D_DARWIN_USE_64_BIT_INODE=1' \
 	'-D_LARGEFILE_SOURCE' \
 	'-D_FILE_OFFSET_BITS=64' \
 	'-DBUILDING_NODE_EXTENSION'
 
 # Flags passed to all source files.
 CFLAGS_Release := \
-	-fPIC \
-	-pthread \
+	-Os \
+	-gdwarf-2 \
+	-mmacosx-version-min=10.7 \
+	-arch x86_64 \
 	-Wall \
-	-Wextra \
-	-Wno-unused-parameter \
-	-m64 \
-	-Wall \
-	-std=c++11 \
-	-O3 \
-	-fno-omit-frame-pointer
+	-Wendif-labels \
+	-W \
+	-Wno-unused-parameter
 
 # Flags passed to only C files.
-CFLAGS_C_Release :=
+CFLAGS_C_Release := \
+	-fno-strict-aliasing
 
 # Flags passed to only C++ files.
 CFLAGS_CC_Release := \
+	-std=gnu++0x \
+	-stdlib=libc++ \
 	-fno-rtti \
-	-fno-exceptions \
-	-std=gnu++0x
+	-fno-threadsafe-statics \
+	-fno-strict-aliasing
+
+# Flags passed to only ObjC files.
+CFLAGS_OBJC_Release :=
+
+# Flags passed to only ObjC++ files.
+CFLAGS_OBJCC_Release :=
 
 INCS_Release := \
-	-I/home/monk/.node-gyp/7.8.0/include/node \
-	-I/home/monk/.node-gyp/7.8.0/src \
-	-I/home/monk/.node-gyp/7.8.0/deps/uv/include \
-	-I/home/monk/.node-gyp/7.8.0/deps/v8/include \
+	-I/Users/monk/.node-gyp/8.0.0/include/node \
+	-I/Users/monk/.node-gyp/8.0.0/src \
+	-I/Users/monk/.node-gyp/8.0.0/deps/uv/include \
+	-I/Users/monk/.node-gyp/8.0.0/deps/v8/include \
 	-I$(srcdir)/node_modules/nan
 
 OBJS := \
@@ -91,6 +108,8 @@ all_deps += $(OBJS)
 $(OBJS): TOOLSET := $(TOOLSET)
 $(OBJS): GYP_CFLAGS := $(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))  $(CFLAGS_$(BUILDTYPE)) $(CFLAGS_C_$(BUILDTYPE))
 $(OBJS): GYP_CXXFLAGS := $(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))  $(CFLAGS_$(BUILDTYPE)) $(CFLAGS_CC_$(BUILDTYPE))
+$(OBJS): GYP_OBJCFLAGS := $(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))  $(CFLAGS_$(BUILDTYPE)) $(CFLAGS_C_$(BUILDTYPE)) $(CFLAGS_OBJC_$(BUILDTYPE))
+$(OBJS): GYP_OBJCXXFLAGS := $(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))  $(CFLAGS_$(BUILDTYPE)) $(CFLAGS_CC_$(BUILDTYPE)) $(CFLAGS_OBJCC_$(BUILDTYPE))
 
 # Suffix rules, putting all outputs into $(obj).
 
@@ -108,37 +127,58 @@ $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cc FORCE_DO_CMD
 # End of this set of suffix rules
 ### Rules for final target.
 LDFLAGS_Debug := \
-	-pthread \
-	-rdynamic \
-	-m64
+	-framework IOKit \
+	-framework CoreFoundation \
+	-undefined dynamic_lookup \
+	-Wl,-no_pie \
+	-Wl,-search_paths_first \
+	-mmacosx-version-min=10.7 \
+	-arch x86_64 \
+	-L$(builddir) \
+	-stdlib=libc++
+
+LIBTOOLFLAGS_Debug := \
+	-framework IOKit \
+	-framework CoreFoundation \
+	-undefined dynamic_lookup \
+	-Wl,-no_pie \
+	-Wl,-search_paths_first
 
 LDFLAGS_Release := \
-	-pthread \
-	-rdynamic \
-	-m64
+	-framework IOKit \
+	-framework CoreFoundation \
+	-undefined dynamic_lookup \
+	-Wl,-no_pie \
+	-Wl,-search_paths_first \
+	-mmacosx-version-min=10.7 \
+	-arch x86_64 \
+	-L$(builddir) \
+	-stdlib=libc++
+
+LIBTOOLFLAGS_Release := \
+	-framework IOKit \
+	-framework CoreFoundation \
+	-undefined dynamic_lookup \
+	-Wl,-no_pie \
+	-Wl,-search_paths_first
 
 LIBS :=
 
-$(obj).target/osx-keylogger.node: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))
-$(obj).target/osx-keylogger.node: LIBS := $(LIBS)
-$(obj).target/osx-keylogger.node: TOOLSET := $(TOOLSET)
-$(obj).target/osx-keylogger.node: $(OBJS) FORCE_DO_CMD
+$(builddir)/osx-keylogger.node: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))
+$(builddir)/osx-keylogger.node: LIBS := $(LIBS)
+$(builddir)/osx-keylogger.node: GYP_LIBTOOLFLAGS := $(LIBTOOLFLAGS_$(BUILDTYPE))
+$(builddir)/osx-keylogger.node: TOOLSET := $(TOOLSET)
+$(builddir)/osx-keylogger.node: $(OBJS) FORCE_DO_CMD
 	$(call do_cmd,solink_module)
 
-all_deps += $(obj).target/osx-keylogger.node
+all_deps += $(builddir)/osx-keylogger.node
 # Add target alias
 .PHONY: osx-keylogger
 osx-keylogger: $(builddir)/osx-keylogger.node
 
-# Copy this to the executable output path.
-$(builddir)/osx-keylogger.node: TOOLSET := $(TOOLSET)
-$(builddir)/osx-keylogger.node: $(obj).target/osx-keylogger.node FORCE_DO_CMD
-	$(call do_cmd,copy)
-
-all_deps += $(builddir)/osx-keylogger.node
 # Short alias for building this executable.
 .PHONY: osx-keylogger.node
-osx-keylogger.node: $(obj).target/osx-keylogger.node $(builddir)/osx-keylogger.node
+osx-keylogger.node: $(builddir)/osx-keylogger.node
 
 # Add executable to "all" target.
 .PHONY: all

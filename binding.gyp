@@ -2,12 +2,20 @@
     "targets": [
       {
         "target_name": "osx-keylogger",
-        "cflags": ["-Wall", "-std=c++11"],
-        "sources": [ "osx-keylogger.cc" ],
         "conditions": [
             ["OS=='mac'", {
-              "sources": [ "osx-keylogger.cc" ],
-              "cflags": ["-Wall", "-std=c++11", "-framework", "coreFoundation", "-framework", "IOKit"]
+              'LDFLAGS': [
+                '-framework IOKit',
+                '-framework CoreFoundation'
+              ],
+              'xcode_settings': {
+                'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
+                'OTHER_LDFLAGS': [
+                  '-framework IOKit',
+                  '-framework CoreFoundation'
+                ],
+              },
+              "sources": [ "osx-keylogger.cc" ]
             }]
           ],
         "include_dirs" : [
