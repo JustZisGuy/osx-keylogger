@@ -6,6 +6,7 @@ using namespace Nan;
 #include <IOKit/hid/IOHIDValue.h>
 #include <IOKit/hid/IOHIDManager.h>
 
+//FIXME This is never called
 void myHIDKeyboardCallback( void* context,  IOReturn result,  void* sender,  IOHIDValueRef value ) {
   AsyncProgressWorker::ExecutionProgress& progress = (AsyncProgressWorker::ExecutionProgress&)context;
   IOHIDElementRef elem = IOHIDValueGetElement( value );
@@ -14,8 +15,7 @@ void myHIDKeyboardCallback( void* context,  IOReturn result,  void* sender,  IOH
   }
   uint32_t scancode = IOHIDElementGetUsage( elem );
   long pressed = IOHIDValueGetIntegerValue( value );
-  uint32_t a = 12;
-  progress.Send(reinterpret_cast<const char*>(&a), sizeof(int));
+  //TODO Handle pressed value 0 or 1
   progress.Send(reinterpret_cast<const char*>(&scancode), sizeof(uint32_t));
 }
 
@@ -46,9 +46,8 @@ CFMutableDictionaryRef myCreateDeviceMatchingDictionary( UInt32 usagePage,  UInt
 
 class KeyloggerWorker : public AsyncProgressWorker {
  public:
-  KeyloggerWorker(Callback *callback, Callback *progress, int iters)
-    : AsyncProgressWorker(callback), progress(progress), iters(iters) {
-      this->runLoopMode = CFStringCreateWithCString(NULL, "keylogger", kCFStringEncodingASCII);
+  KeyloggerWorker(Callback *callback, Callback *progress)
+    : AsyncProgressWorker(callback), progress(progress) {
       this->hidManager = IOHIDManagerCreate( kCFAllocatorDefault, kIOHIDOptionsTypeNone );
       CFArrayRef matches;
       {
@@ -61,22 +60,19 @@ class KeyloggerWorker : public AsyncProgressWorker {
     }
 
   ~KeyloggerWorker() {
-    CFRelease(this->runLoopMode);
+    //TODO Cleanup
   }
 
   void Execute (const AsyncProgressWorker::ExecutionProgress& progress) {
     void* context = (void*) &progress;
     IOHIDManagerRegisterInputValueCallback( this->hidManager, myHIDKeyboardCallback, context );
-    IOHIDManagerScheduleWithRunLoop( this->hidManager, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode );
+    IOHIDManagerScheduleWithRunLoop( this->hidManager, CFRunLoopGetMain(), kCFRunLoopDefaultMode );
     IOHIDManagerOpen( this->hidManager, kIOHIDOptionsTypeNone );
-    SInt32 res;
-    do {
-      res = CFRunLoopRunInMode(runLoopMode, 1000, TRUE);
-    } while(res != kCFRunLoopRunFinished && res != kCFRunLoopRunTimedOut);
-    uint32_t a = res;
-    progress.Send(reinterpret_cast<const char*>(&a), sizeof(int));
-    progress.Send(reinterpret_cast<const char*>(&a), sizeof(int));
-    usleep(10000000);
+    CFRunLoopRun();
+
+    while(true) {
+      usleep(10000);
+    }
   }
 
   void HandleProgressCallback(const char *data, size_t size) {
@@ -90,15 +86,13 @@ class KeyloggerWorker : public AsyncProgressWorker {
 
  private:
   Callback *progress;
-  CFStringRef runLoopMode;
   IOHIDManagerRef hidManager;
-  int iters;
 };
 
 NAN_METHOD(Listen) {
   Callback *progress = new Callback(info[0].As<v8::Function>());
   Callback *callback = new Callback(info[0].As<v8::Function>());
-  AsyncQueueWorker(new KeyloggerWorker(callback, progress, 100));
+  AsyncQueueWorker(new KeyloggerWorker(callback, progress));
 }
 
 NAN_MODULE_INIT(Init) {
