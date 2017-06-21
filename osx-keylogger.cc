@@ -4,8 +4,7 @@
 #include <list>
 
 typedef struct {
-  uint32_t pressedFirst;
-  uint32_t pressedSecond;
+  uint32_t pressed;
   uint32_t scancode;
 } KeyEvent;
 
@@ -18,14 +17,9 @@ using namespace Nan;
 
 void myHIDKeyboardCallback( void* context,  IOReturn result,  void* sender,  IOHIDValueRef value ) {
   IOHIDElementRef elem = IOHIDValueGetElement( value );
-  if (IOHIDElementGetUsagePage(elem) != 0x07) {
-    return;
-  }
   uint32_t scancode = IOHIDElementGetUsage( elem );
-  long pressed = IOHIDValueGetIntegerValue( value );
-  uint32_t pressedFirst = pressed;
-  uint32_t pressedSecond = (pressed>>32);
-  KeyEvent event = {pressedFirst, pressedSecond, scancode};
+  uint32_t pressed = IOHIDValueGetIntegerValue( value ) == 0 ? 0 : 1;
+  KeyEvent event = {pressed, scancode};
   keyEvents.push_back(event);
 }
 
@@ -93,11 +87,10 @@ class KeyloggerWorker : public AsyncProgressWorker {
     KeyEvent event = *reinterpret_cast<KeyEvent*>(const_cast<char*>(data));
 
     v8::Local<v8::Value> argv[] = {
-      New<v8::Integer>(event.pressedFirst),
-      New<v8::Integer>(event.pressedSecond),
-      New<v8::Integer>(event.scancode)
+      New<v8::Uint32>(event.pressed),
+      New<v8::Uint32>(event.scancode)
     };
-    progress->Call(3, argv);
+    progress->Call(2, argv);
   }
 
  private:

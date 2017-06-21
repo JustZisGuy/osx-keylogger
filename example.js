@@ -3,6 +3,8 @@ const keylogger = require('./build/Release/osx-keylogger');
 
 // console.log(keylogger.pass_number(100));
 
-keylogger.listen((pressedFirst, pressedSecond, scancode) => {
-  console.log(`Keypress ${pressedFirst}, ${pressedSecond}, ${scancode}`);
+keylogger.listen((pressed, scancode) => {
+  if (pressed === 1) {
+    console.log(`Keypress ${pressed}, ${scancode}`);
+  }
 });
