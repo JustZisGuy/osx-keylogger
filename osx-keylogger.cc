@@ -1,22 +1,32 @@
 #include <nan.h>
 #include <unistd.h>
 
+#include <list>
+
+typedef struct {
+  uint32_t pressedFirst;
+  uint32_t pressedSecond;
+  uint32_t scancode;
+} KeyEvent;
+
+std::list<KeyEvent> keyEvents;
+
 using namespace Nan;
 
 #include <IOKit/hid/IOHIDValue.h>
 #include <IOKit/hid/IOHIDManager.h>
 
-//FIXME This is never called
 void myHIDKeyboardCallback( void* context,  IOReturn result,  void* sender,  IOHIDValueRef value ) {
-  AsyncProgressWorker::ExecutionProgress& progress = (AsyncProgressWorker::ExecutionProgress&)context;
   IOHIDElementRef elem = IOHIDValueGetElement( value );
   if (IOHIDElementGetUsagePage(elem) != 0x07) {
     return;
   }
   uint32_t scancode = IOHIDElementGetUsage( elem );
   long pressed = IOHIDValueGetIntegerValue( value );
-  //TODO Handle pressed value 0 or 1
-  progress.Send(reinterpret_cast<const char*>(&scancode), sizeof(uint32_t));
+  uint32_t pressedFirst = pressed;
+  uint32_t pressedSecond = (pressed>>32);
+  KeyEvent event = {pressedFirst, pressedSecond, scancode};
+  keyEvents.push_back(event);
 }
 
 CFMutableDictionaryRef myCreateDeviceMatchingDictionary( UInt32 usagePage,  UInt32 usage ) {
@@ -64,24 +74,30 @@ class KeyloggerWorker : public AsyncProgressWorker {
   }
 
   void Execute (const AsyncProgressWorker::ExecutionProgress& progress) {
-    void* context = (void*) &progress;
-    IOHIDManagerRegisterInputValueCallback( this->hidManager, myHIDKeyboardCallback, context );
-    IOHIDManagerScheduleWithRunLoop( this->hidManager, CFRunLoopGetMain(), kCFRunLoopDefaultMode );
+    IOHIDManagerRegisterInputValueCallback( this->hidManager, myHIDKeyboardCallback, NULL);
+    IOHIDManagerScheduleWithRunLoop( this->hidManager, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode );
     IOHIDManagerOpen( this->hidManager, kIOHIDOptionsTypeNone );
-    CFRunLoopRun();
 
     while(true) {
-      usleep(10000);
+      CFRunLoopRunInMode(kCFRunLoopDefaultMode, 60, TRUE);
+      while (!keyEvents.empty()) {
+        KeyEvent event = keyEvents.front();
+        progress.Send(reinterpret_cast<const char*>(&event), sizeof(KeyEvent));
+        keyEvents.pop_front();
+      }
     }
   }
 
   void HandleProgressCallback(const char *data, size_t size) {
     Nan::HandleScope scope;
+    KeyEvent event = *reinterpret_cast<KeyEvent*>(const_cast<char*>(data));
 
     v8::Local<v8::Value> argv[] = {
-        New<v8::Integer>(*reinterpret_cast<uint32_t*>(const_cast<char*>(data)))
+      New<v8::Integer>(event.pressedFirst),
+      New<v8::Integer>(event.pressedSecond),
+      New<v8::Integer>(event.scancode)
     };
-    progress->Call(1, argv);
+    progress->Call(3, argv);
   }
 
  private:

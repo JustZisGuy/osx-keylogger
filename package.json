@@ -15,11 +15,8 @@
   "gypfile": true,
   "author": "Magnus Weinberg <magnus.weinberg@gmail.com>",
   "license": "MIT",
-  "dependencies": {
-    "nan": "^2.6.2",
-    "node-gyp": "^3.6.2"
-  },
   "devDependencies": {
+    "nan": "^2.6.2",
     "eslint": "^3.19.0",
     "eslint-config-airbnb": "^15.0.1",
     "eslint-plugin-import": "^2.3.0",
