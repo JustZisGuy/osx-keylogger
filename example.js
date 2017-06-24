@@ -3,6 +3,6 @@ const keylogger = require('./build/Release/osx-keylogger');
 
 // console.log(keylogger.pass_number(100));
 
-keylogger.listen((keyString) => {
-  console.log(`Key string: ${keyString}`);
+keylogger.listen((usage, pressed) => {
+  console.log('Keylog: ', usage, pressed);
 });
