@@ -3,9 +3,10 @@
 
 #include <list>
 
+#define SCANCODE_LENGTH 100
+
 typedef struct {
-  uint32_t pressed;
-  uint32_t scancode;
+  char scancode[SCANCODE_LENGTH];
 } KeyEvent;
 
 std::list<KeyEvent> keyEvents;
@@ -17,9 +18,13 @@ using namespace Nan;
 
 void myHIDKeyboardCallback( void* context,  IOReturn result,  void* sender,  IOHIDValueRef value ) {
   IOHIDElementRef elem = IOHIDValueGetElement( value );
-  uint32_t scancode = IOHIDElementGetUsage( elem );
-  uint32_t pressed = IOHIDValueGetIntegerValue( value ) == 0 ? 0 : 1;
-  KeyEvent event = {pressed, scancode};
+  if (IOHIDElementGetUsagePage(elem) != 0x07) {
+    return;
+  }
+  uint32_t usage = IOHIDElementGetUsage( elem );
+  long pressed = IOHIDValueGetIntegerValue( value );
+  KeyEvent event;
+  snprintf(event.scancode, SCANCODE_LENGTH, "%d %ld", usage, pressed);
   keyEvents.push_back(event);
 }
 
@@ -85,12 +90,10 @@ class KeyloggerWorker : public AsyncProgressWorker {
   void HandleProgressCallback(const char *data, size_t size) {
     Nan::HandleScope scope;
     KeyEvent event = *reinterpret_cast<KeyEvent*>(const_cast<char*>(data));
-
     v8::Local<v8::Value> argv[] = {
-      New<v8::Uint32>(event.pressed),
-      New<v8::Uint32>(event.scancode)
+      Nan::New<v8::String>(event.scancode).ToLocalChecked()
     };
-    progress->Call(2, argv);
+    progress->Call(1, argv);
   }
 
  private:
