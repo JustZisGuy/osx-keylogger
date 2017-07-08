@@ -11,7 +11,7 @@
     "osx",
     "keylogger"
   ],
-  "main": "./build/Release/osx-keylogger",
+  "main": "./osx-keylogger",
   "gypfile": true,
   "author": "Magnus Weinberg <magnus.weinberg@gmail.com>",
   "license": "MIT",
@@ -28,5 +28,8 @@
     "eslint": "eslint example.js",
     "readme": "librarity",
     "build": "npm install && npm run eslint && npm run readme"
+  },
+  "dependencies": {
+    "keypress": "^0.2.1"
   }
 }

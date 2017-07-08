@@ -6,8 +6,8 @@
 #define SCANCODE_LENGTH 100
 
 typedef struct {
-  uint32_t usage;
-  long pressed;
+  char usage[4];
+  char value[4];
 } KeyEvent;
 
 std::list<KeyEvent> keyEvents;
@@ -19,12 +19,21 @@ using namespace Nan;
 
 void myHIDKeyboardCallback( void* context,  IOReturn result,  void* sender,  IOHIDValueRef value ) {
   IOHIDElementRef elem = IOHIDValueGetElement( value );
-  if (IOHIDElementGetUsagePage(elem) != 0x07) {
+  uint32_t usagePage = IOHIDElementGetUsagePage(elem);
+  if (usagePage != 0x07) {
     return;
   }
+
   uint32_t usage = IOHIDElementGetUsage( elem );
-  long pressed = IOHIDValueGetIntegerValue( value );
-  KeyEvent event = {usage, pressed};
+
+  char value[4];
+  long longValue = IOHIDValueGetIntegerValue( value );
+  value[0] = (int)((longValue >> 24) & 0xFF) ;
+  value[1] = (int)((longValue >> 16) & 0xFF) ;
+  value[2] = (int)((longValue >> 8) & 0XFF);
+  value[3] = (int)((longValue & 0XFF));
+
+  KeyEvent event = {usage, value};
   keyEvents.push_back(event);
 }
 

@@ -1,8 +1,8 @@
 /* eslint-disable no-console,import/no-unresolved */
-const keylogger = require('./build/Release/osx-keylogger');
+const keylogger = require('./osx-keylogger');
 
-// console.log(keylogger.pass_number(100));
+//process.stdin.setRawMode(true);
 
-keylogger.listen((usage, pressed) => {
-  console.log('Keylog: ', usage, pressed);
+keylogger.listen((result) => {
+  console.log('Example: ', result);
 });
