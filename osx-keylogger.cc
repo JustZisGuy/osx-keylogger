@@ -3,11 +3,13 @@
 
 #include <list>
 
-#define SCANCODE_LENGTH 100
-
 typedef struct {
-  char usage[4];
-  char value[4];
+  uint32_t usage;
+  uint32_t usagePage;
+  char value1;
+  char value2;
+  char value3;
+  char value4;
 } KeyEvent;
 
 std::list<KeyEvent> keyEvents;
@@ -26,14 +28,13 @@ void myHIDKeyboardCallback( void* context,  IOReturn result,  void* sender,  IOH
 
   uint32_t usage = IOHIDElementGetUsage( elem );
 
-  char value[4];
   long longValue = IOHIDValueGetIntegerValue( value );
-  value[0] = (int)((longValue >> 24) & 0xFF) ;
-  value[1] = (int)((longValue >> 16) & 0xFF) ;
-  value[2] = (int)((longValue >> 8) & 0XFF);
-  value[3] = (int)((longValue & 0XFF));
+  char value1 = (int)((longValue >> 24) & 0xFF) ;
+  char value2 = (int)((longValue >> 16) & 0xFF) ;
+  char value3 = (int)((longValue >> 8) & 0XFF);
+  char value4 = (int)((longValue & 0XFF));
 
-  KeyEvent event = {usage, value};
+  KeyEvent event = {usage, usagePage, value1, value2, value3, value4};
   keyEvents.push_back(event);
 }
 
@@ -101,9 +102,13 @@ class KeyloggerWorker : public AsyncProgressWorker {
     KeyEvent event = *reinterpret_cast<KeyEvent*>(const_cast<char*>(data));
     v8::Local<v8::Value> argv[] = {
       New<v8::Int32>(event.usage),
-      New<v8::Number>(event.pressed)
+      New<v8::Int32>(event.usagePage),
+      New<v8::Number>(event.value1),
+      New<v8::Number>(event.value2),
+      New<v8::Number>(event.value3),
+      New<v8::Number>(event.value4)
     };
-    progress->Call(2, argv);
+    progress->Call(6, argv);
   }
 
  private:
