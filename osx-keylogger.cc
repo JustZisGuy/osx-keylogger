@@ -5,11 +5,14 @@
 
 typedef struct {
   uint32_t usage;
-  uint32_t usagePage;
   char value1;
   char value2;
   char value3;
   char value4;
+  char value5;
+  char value6;
+  char value7;
+  char value8;
 } KeyEvent;
 
 std::list<KeyEvent> keyEvents;
@@ -28,13 +31,17 @@ void myHIDKeyboardCallback( void* context,  IOReturn result,  void* sender,  IOH
 
   uint32_t usage = IOHIDElementGetUsage( elem );
 
-  long longValue = IOHIDValueGetIntegerValue( value );
-  char value1 = (int)((longValue >> 24) & 0xFF) ;
-  char value2 = (int)((longValue >> 16) & 0xFF) ;
-  char value3 = (int)((longValue >> 8) & 0XFF);
-  char value4 = (int)((longValue & 0XFF));
+  uint64_t longValue = IOHIDValueGetIntegerValue( value );
+  char value1 = (int)((longValue >> 56) & 0xFF);
+  char value2 = (int)((longValue >> 48) & 0xFF);
+  char value3 = (int)((longValue >> 40) & 0XFF);
+  char value4 = (int)((longValue >> 32) & 0XFF);
+  char value5 = (int)((longValue >> 24) & 0xFF);
+  char value6 = (int)((longValue >> 16) & 0xFF);
+  char value7 = (int)((longValue >> 8) & 0XFF);
+  char value8 = (int)((longValue & 0XFF));
 
-  KeyEvent event = {usage, usagePage, value1, value2, value3, value4};
+  KeyEvent event = {usage, value1, value2, value3, value4, value5, value6, value7, value8};
   keyEvents.push_back(event);
 }
 
@@ -102,13 +109,16 @@ class KeyloggerWorker : public AsyncProgressWorker {
     KeyEvent event = *reinterpret_cast<KeyEvent*>(const_cast<char*>(data));
     v8::Local<v8::Value> argv[] = {
       New<v8::Int32>(event.usage),
-      New<v8::Int32>(event.usagePage),
       New<v8::Number>(event.value1),
       New<v8::Number>(event.value2),
       New<v8::Number>(event.value3),
-      New<v8::Number>(event.value4)
+      New<v8::Number>(event.value4),
+      New<v8::Number>(event.value5),
+      New<v8::Number>(event.value6),
+      New<v8::Number>(event.value7),
+      New<v8::Number>(event.value8)
     };
-    progress->Call(6, argv);
+    progress->Call(9, argv);
   }
 
  private:

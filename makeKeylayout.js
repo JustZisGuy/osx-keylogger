@@ -1,9 +1,27 @@
 /* eslint-disable no-console,import/no-unresolved */
+
+if (process.argv.length !== 3) {
+  console.error(
+    'This program can only be run using: ' +
+    'node makeKeylayout.js <json languagefile>'
+  );
+  process.exit(1);
+}
+
 const keypress = require('keypress');
+const fs = require('fs');
 
 const keylogger = require('./osx-keylogger');
 
-const keyLayout = {};
+let keyLayout = {};
+
+const layoutFile = process.argv[2];
+
+try {
+  keyLayout = JSON.parse(fs.readFileSync(layoutFile));
+} catch(ex) {
+  console.log('New file created');
+}
 
 const modifiers = {
   225: 'L_SHIFT',
@@ -38,18 +56,31 @@ function modifiersToKey() {
 }
 
 function checkKeyData() {
-  if (currentKeycode !== null && currentKeypress !== null) {
+  if (currentKeycode && currentKeypress) {
     if (!keyLayout[currentModifiers]) {
       keyLayout[currentModifiers] = {};
     }
     keyLayout[currentModifiers][currentKeycode] = currentKeypress;
     currentKeycode = null;
     currentKeypress= null;
-    console.log(JSON.stringify(keyLayout, undefined, 2));
+    fs.writeFileSync(
+      layoutFile,
+      JSON.stringify(keyLayout, undefined, 2)
+    );
   }
 }
 
-keylogger.listen((page, keyCode) => {
+keylogger.listen((page, ...keyCodesParam) => {
+  const keysDown = keyCodesParam.filter((code) => code !== 0);
+
+  if (keysDown.length>1) {
+    console.error('One key at a time please, clearing data');
+    currentKeycode = null;
+    currentKeypress = null;
+    return;
+  }
+  const keyCode = keysDown[0];
+
   if (page > -1) {
     modifierStates[page] = keyCode;
   } else {
