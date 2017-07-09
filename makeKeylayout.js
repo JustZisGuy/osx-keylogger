@@ -1,5 +1,10 @@
 /* eslint-disable no-console,import/no-unresolved */
-
+/*
+  This program uses keypress along with the keylogger to
+  make a rough start for a keylayout by trying all the
+  different keys on a keyboard so remember to go through it
+  and fill in the blanks afterwards
+*/
 if (process.argv.length !== 3) {
   console.error(
     'This program can only be run using: ' +
@@ -11,7 +16,7 @@ if (process.argv.length !== 3) {
 const keypress = require('keypress');
 const fs = require('fs');
 
-const keylogger = require('./osx-keylogger');
+const keylogger = require('./build/Release/osx-keylogger');
 
 let keyLayout = {};
 
