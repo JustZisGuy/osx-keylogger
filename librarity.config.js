@@ -1,3 +1,3 @@
 module.exports = {
-  confirmOverwrite: false
+  confirmOverwrite: false,
 };

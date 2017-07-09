@@ -85,10 +85,6 @@ class KeyloggerWorker : public AsyncProgressWorker {
       IOHIDManagerSetDeviceMatchingMultiple( this->hidManager, matches );
     }
 
-  ~KeyloggerWorker() {
-    //TODO Cleanup
-  }
-
   void Execute (const AsyncProgressWorker::ExecutionProgress& progress) {
     IOHIDManagerRegisterInputValueCallback( this->hidManager, myHIDKeyboardCallback, NULL);
     IOHIDManagerScheduleWithRunLoop( this->hidManager, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode );

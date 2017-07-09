@@ -1,7 +1,6 @@
 {
   "name": "osx-keylogger",
   "version": "1.0.0",
-  "private": true,
   "description": "OSX Keylogger POC",
   "repository": {
     "type": "git",
@@ -25,7 +24,7 @@
     "librarity": "^0.1.0"
   },
   "scripts": {
-    "eslint": "eslint example.js",
+    "eslint": "eslint *.js",
     "readme": "librarity",
     "build": "npm install && npm run eslint && npm run readme"
   },

@@ -4,7 +4,7 @@ const fs = require('fs');
 const keylogger = require('./build/Release/osx-keylogger');
 
 const loggerModule = {
-  keysDown: []
+  keysDown: [],
 };
 
 const modifiers = {
@@ -18,12 +18,12 @@ const modifiers = {
 
 const modifierStates = Object
   .keys(modifiers)
-  .reduce((states, key) => {
-    states[key] = 0;
-    return states
-  }, {});
+  .reduce((statesParam, key) => {
+    const states = statesParam;
 
-let currentModifiers = null;
+    states[key] = 0;
+    return states;
+  }, {});
 
 function modifiersToKey() {
   return Object
@@ -36,7 +36,7 @@ function modifiersToKey() {
           keys.push(key);
         }
       }
-      return keys
+      return keys;
     }, [])
     .join('+');
 }
@@ -45,22 +45,22 @@ function processData(page, ...keyCodesParam) {
   if (page > -1) {
     keyCodesParam.forEach((code) => {
       modifierStates[page] = code;
-    })
+    });
   } else {
-    //keys held down now
-    const keysDown = keyCodesParam.filter((code) => code !== 0);
+    // keys held down now
+    const keysDown = keyCodesParam.filter(code => code !== 0);
 
-    //compare to which keys used to be held down
-    //to find which keys are new
-    const newKeys = keyCodesParam.filter((code) => {
+    // compare to which keys used to be held down
+    // to find which keys are new
+    keyCodesParam.filter((code) => {
       if (code === 0) {
         return false;
       }
       return !loggerModule.keysDown.includes(code);
     }).forEach((code) => {
-      //then check the new keys to find out whether or not
-      //we have a match in the choosen key layout and return
-      //as best we can
+      // then check the new keys to find out whether or not
+      // we have a match in the choosen key layout and return
+      // as best we can
       const currentModifiers = modifiersToKey();
       const keyLayoutPart = loggerModule.keyLayout[currentModifiers];
       const keyLayoutFallback = loggerModule.keyLayout[''];
@@ -68,25 +68,23 @@ function processData(page, ...keyCodesParam) {
       if (keyLayoutPart && keyLayoutPart[code]) {
         loggerModule.callback(currentModifiers, keyLayoutPart[code]);
       } else if (keyLayoutFallback[code]) {
-        //using fallback
+        // using fallback
         loggerModule.callback(currentModifiers, keyLayoutFallback[code]);
       } else {
-        //not found
+        // not found
         loggerModule.callback(currentModifiers, `<${code}>`);
       }
     });
     loggerModule.keysDown = keysDown;
   }
-
 }
 
 loggerModule.listen = (callback, layoutPath) => {
   loggerModule.callback = callback;
   try {
     loggerModule.keyLayout = JSON.parse(fs.readFileSync(layoutPath));
-  } catch(ex) {
-    console.error('Can´t find or parse the key layout file');
-    process.exit(1);
+  } catch (ex) {
+    throw Error('Can´t find or parse the key layout file');
   }
   keylogger.listen(processData);
 };

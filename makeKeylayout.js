@@ -8,7 +8,7 @@
 if (process.argv.length !== 3) {
   console.error(
     'This program can only be run using: ' +
-    'node makeKeylayout.js <json languagefile>'
+    'node makeKeylayout.js <json languagefile>',
   );
   process.exit(1);
 }
@@ -24,7 +24,7 @@ const layoutFile = process.argv[2];
 
 try {
   keyLayout = JSON.parse(fs.readFileSync(layoutFile));
-} catch(ex) {
+} catch (ex) {
   console.log('New file created');
 }
 
@@ -39,9 +39,11 @@ const modifiers = {
 
 const modifierStates = Object
   .keys(modifiers)
-  .reduce((states, key) => {
+  .reduce((statesParam, key) => {
+    const states = statesParam;
+
     states[key] = 0;
-    return states
+    return states;
   }, {});
 
 let currentKeypress = null;
@@ -55,7 +57,7 @@ function modifiersToKey() {
       if (modifierStates[key] === 1) {
         keys.push(modifiers[key]);
       }
-      return keys
+      return keys;
     }, [])
     .join('+');
 }
@@ -67,18 +69,18 @@ function checkKeyData() {
     }
     keyLayout[currentModifiers][currentKeycode] = currentKeypress;
     currentKeycode = null;
-    currentKeypress= null;
+    currentKeypress = null;
     fs.writeFileSync(
       layoutFile,
-      JSON.stringify(keyLayout, undefined, 2)
+      JSON.stringify(keyLayout, undefined, 2),
     );
   }
 }
 
 keylogger.listen((page, ...keyCodesParam) => {
-  const keysDown = keyCodesParam.filter((code) => code !== 0);
+  const keysDown = keyCodesParam.filter(code => code !== 0);
 
-  if (keysDown.length>1) {
+  if (keysDown.length > 1) {
     console.error('One key at a time please, clearing data');
     currentKeycode = null;
     currentKeypress = null;
@@ -98,7 +100,7 @@ keylogger.listen((page, ...keyCodesParam) => {
 keypress(process.stdin);
 
 // listen for the "keypress" event
-process.stdin.on('keypress', function (ch, key) {
+process.stdin.on('keypress', (ch, key) => {
   if (ch) {
     currentKeypress = ch;
     checkKeyData();
