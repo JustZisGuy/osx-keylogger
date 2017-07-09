@@ -20,8 +20,7 @@
     "eslint-plugin-import": "^2.3.0",
     "eslint-plugin-jsx-a11y": "^5.0.3",
     "eslint-plugin-react": "^7.0.1",
-    "librarity": "^0.1.0",
-    "keypress": "^0.2.1"
+    "librarity": "^0.1.0"
   },
   "scripts": {
     "eslint": "eslint *.js",
@@ -29,6 +28,7 @@
     "build": "npm install && npm run eslint && npm run readme"
   },
   "dependencies": {
-    "nan": "^2.6.2"
+    "nan": "^2.6.2",
+    "keypress": "^0.2.1"
   }
 }
