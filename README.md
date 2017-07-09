@@ -5,7 +5,7 @@ By using native bindings to IOKit we can talk directly with the keyboard. Unfort
 
 ## Usage example
 ```javascript
-const keylogger = require('./osx-keylogger');
+const keylogger = require('osx-keylogger');
 
 // shows only the stuff from the keylogger(not stdin) but breaks ctrl+c
 // process.stdin.setRawMode(true);
