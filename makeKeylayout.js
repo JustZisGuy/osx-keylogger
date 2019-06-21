@@ -7,8 +7,8 @@
 */
 if (process.argv.length !== 3) {
   console.error(
-    'This program can only be run using: ' +
-    'node makeKeylayout.js <json languagefile>',
+    'This program can only be run using: '
+    + 'node makeKeylayout.js <json languagefile>',
   );
   process.exit(1);
 }
