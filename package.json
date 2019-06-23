@@ -1,6 +1,6 @@
 {
   "name": "osx-keylogger",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Mac OS X 10.5+ Keylogger POC",
   "repository": {
     "type": "git",
