@@ -1,6 +1,6 @@
 {
   "name": "osx-keylogger",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Mac OS X 10.5+ Keylogger POC",
   "repository": {
     "type": "git",
@@ -20,7 +20,8 @@
     "eslint-plugin-import": "^2.17.3",
     "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-react": "^7.13.0",
-    "librarity": "^0.1.0"
+    "librarity": "^0.1.0",
+    "lodash": ">=4.17.13"
   },
   "scripts": {
     "eslint": "eslint *.js",
