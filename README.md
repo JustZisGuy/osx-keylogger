@@ -3,6 +3,11 @@
 ## Introduction
 By using native bindings to IOKit we can talk directly with the keyboard. Unfortunately this means we have to provide our own key layouts but since we can talk directly with the hardware this should work regardless of which state the rest of the system is in.
 
+## Last tested working version of OS X
+macOS Catalina 10.15.3
+### Note
+Since the writing of this library OS X now has added security features to let the user allow/deny direct recording of keystrokes.
+
 ## Usage example
 ```javascript
 const keylogger = require('osx-keylogger');
