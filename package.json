@@ -1,5 +1,9 @@
 {
   "name": "osx-keylogger",
+  "engines": {
+    "node": ">7 <12"
+  },
+  "engineStrict": true,
   "version": "1.0.5",
   "description": "Mac OS X 10.5+ Keylogger POC",
   "repository": {
