@@ -4,7 +4,7 @@
     "node": ">7 <12"
   },
   "engineStrict": true,
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Mac OS X 10.5+ Keylogger POC",
   "repository": {
     "type": "git",
