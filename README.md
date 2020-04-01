@@ -8,6 +8,13 @@ macOS Catalina 10.15.3
 ### Note
 Since the writing of this library OS X now has added security features to let the user allow/deny direct recording of keystrokes.
 
+## Node working versions
+When I tested this I found it to work for versions of node between 8 and 11
+
+## Requirements
+Building this package requires XCode to be installed for Catalina, I am unsure if that was needed for
+previous versions of OSX.
+
 ## Usage example
 ```javascript
 const keylogger = require('osx-keylogger');
