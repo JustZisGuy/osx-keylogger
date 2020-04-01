@@ -3,6 +3,13 @@
 ## Introduction
 By using native bindings to IOKit we can talk directly with the keyboard. Unfortunately this means we have to provide our own key layouts but since we can talk directly with the hardware this should work regardless of which state the rest of the system is in.
 
+### Help wanted
+I've noticed that this is my most popular package so feel free to help out. Here is some examples of what I could use some help with:
+- Figure out a way to use the active keyboard layout instead of a homemade one.
+- Have a look at `osx-keylogger.cc` and suggest improvements(by creating issues) or make pull requests to improve it.
+- Adding key layouts.
+Anything missing or poorly designed, let me know. I built this as a POC and will only continue to work on it provided that I get feedback from the community.
+
 ## Last tested working version of OS X
 macOS Catalina 10.15.3
 ### Note
